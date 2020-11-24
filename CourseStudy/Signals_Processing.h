@@ -185,7 +185,6 @@ public:
 		const vector<vector<complex<double>>>& AA, int win_size);
 	void vec_to_2dvec(const vector<complex<double>>& v1, vector<vector<complex<double>>>& v2);
 
-	map<int, vector<vector<complex<double>>>> AAA;
 	//////////////////////////////////////////////
 	template <typename T>
 	void vec_normalize(vector<T>& v)
