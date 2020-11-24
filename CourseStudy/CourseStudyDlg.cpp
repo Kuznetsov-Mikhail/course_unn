@@ -555,10 +555,10 @@ void CCourseStudyDlg::OnBnClickedButton5()
 	updateSP();
 
 	vector<vector<double>> study; study.resize(1/*3*/);
-	int win_size_min = 1;
-	int win_size_max = 51;
-	int win_size_step_r = 5;
-	int try_size = 5;
+	int win_size_min = 10;
+	int win_size_max = 100;
+	int win_size_step_r = 10;
+	int try_size = 10;
 	for (int i = win_size_min; i < win_size_max; i+= win_size_step_r)
 	{
 		double pi = 0;

@@ -133,6 +133,7 @@ public:
 		{
 			sp.Dopler(ImSignal2, f_dop, sp.average_frequency);
 		}
+		sp.addNoize(ImSignal1, 10);
 		sp.addNoize(ImSignal2, noize_v);
 		ImSpectr1.clear();
 		ImSpectr2.clear();

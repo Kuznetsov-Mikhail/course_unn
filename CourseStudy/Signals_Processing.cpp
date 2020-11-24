@@ -851,8 +851,7 @@ void Signals_Processing::Dopler_shift(vector<complex<double>>& mass, double PhiD
 {
 	for (int i = 0; i < mass.size(); i++)
 	{
-		complex<double> buf = exp(comjd * 2. * M_PI * PhiDopler * (double)i / sampling);
-		mass[i] *= buf;
+		mass[i] *= exp(complex<double>(0, 1) * 2. * M_PI * PhiDopler * (double)i / sampling);
 	}
 }
 
