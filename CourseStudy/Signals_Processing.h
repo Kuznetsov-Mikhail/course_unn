@@ -36,7 +36,9 @@ class Signals_Processing
 	*param PhiDopler - частота сдвига
 	*param samp - частота дескретизации сигнала
 	*/
-	void Dopler_shift(vector<complex<double>>& mass, double PhiDopler);
+	template<typename T>
+	void Dopler_shift(vector<complex<T>>& mass, T PhiDopler);
+	//void Dopler_shift(vector<complex<double>>& mass, double PhiDopler);
 	/*
 	Функция Доплеровского масштобирования
 	*param Signal
@@ -171,6 +173,7 @@ public:
 */
 	int CSVD(vector<complex<double>> A, int M, int N, int NU, int NV, vector<double>& S,
 		vector<complex<double>>& U, vector<complex<double>>& V);
+	vector<vector<complex<double>>> AA_matr;
 /**
 * ТРАНСПОНИРОВАНИЕ И ПЕРЕМНОЖЕНИЕ МАТРИЦ
 */

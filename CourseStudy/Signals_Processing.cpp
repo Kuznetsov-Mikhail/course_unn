@@ -512,12 +512,12 @@ double  Signals_Processing::Uncertainty_ipp_jtids(int delay_size, const vector<c
 	for (int i = 0; i < ImSignal1.size(); i++)
 	{
 		complex<float> buf; buf = ImSignal1[i].real() + comjd * ImSignal1[i].imag();
-		signal1[i]=(buf);
+		signal1[i] = (buf);
 	}
 	for (int i = 0; i < ImSignal2.size(); i++)
 	{
 		complex<float> buf; buf = ImSignal2[i].real() + comjd * ImSignal2[i].imag();
-		signal2[i]=(buf);
+		signal2[i] = (buf);
 	}
 	//////////////////// fast_convolution
 	fast_convolution(signal1, this->fir_s, this->FHSS_Signals_initial_fl, GPU_FD);
@@ -846,12 +846,12 @@ void Signals_Processing::Dopler(vector <complex<double>>& Signal, double shift, 
 	Dopler_shift(Signal, shift);
 	Dopler_scaling(Signal, alfa);
 }
-
-void Signals_Processing::Dopler_shift(vector<complex<double>>& mass, double PhiDopler)
+template<typename T>
+void Signals_Processing::Dopler_shift(vector<complex<T>>& mass, T PhiDopler)
 {
 	for (int i = 0; i < mass.size(); i++)
 	{
-		mass[i] *= exp(complex<double>(0, 1) * 2. * M_PI * PhiDopler * (double)i / sampling);
+		mass[i] *= (exp(complex<T>(0, 1) * (T)2. * (T)M_PI * (T)PhiDopler * (T)i / (T)sampling));
 	}
 }
 
@@ -1423,13 +1423,15 @@ double Signals_Processing::Correlation_omp_jtids_with_nl_filtering(int delay_siz
 	//////////////////// fast_convolution
 	fast_convolution(signal1, this->fir_s, this->FHSS_Signals_initial_fl, GPU_FD);
 	fast_convolution(signal2, this->fir_s, this->FHSS_Signals_fl, GPU_FD);
+
 #pragma omp parallel for
 	for (int i = 0; i < this->operating_frequencies.size(); i++)
 	{
-		vector<vector<complex<double>>> AA;
-		this->pre_nonlinear_filtering(operating_frequencies[i] * 1e6, this->sampling, this->BrV, AA, win_size);
-		this->nonlinear_filtering(this->FHSS_Signals_initial_fl[i], operating_frequencies[i] * 1e6, this->sampling, this->BrV,AA, win_size);
-		this->nonlinear_filtering(this->FHSS_Signals_fl[i], operating_frequencies[i] * 1e6, this->sampling, this->BrV,AA, win_size);
+		float shift = this->sampling / 4 - operating_frequencies[i] * 1e6;
+		this->Dopler_shift(this->FHSS_Signals_initial_fl[i], shift);
+		this->Dopler_shift(this->FHSS_Signals_fl[i], shift);
+		this->nonlinear_filtering(this->FHSS_Signals_initial_fl[i], operating_frequencies[i] * 1e6, this->sampling, this->BrV, this->AA_matr, win_size);
+		this->nonlinear_filtering(this->FHSS_Signals_fl[i], operating_frequencies[i] * 1e6, this->sampling, this->BrV, this->AA_matr, win_size);
 	}
 	ResearchRrr.clear();
 	ResearchRrr.resize(this->FHSS_Signals_initial_fl[0].size());

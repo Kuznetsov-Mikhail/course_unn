@@ -567,7 +567,11 @@ int Signals_Processing::pre_nonlinear_filtering(double f0, double sampling, doub
 	{
 		for (int j = 0; j < template_signal.size(); j++)
 		{
-			A[i * template_signal.size() + j] = template_signal[abs(i - j)];
+			int index = i - j;
+			if (index <0)
+				A[i * template_signal.size() + j] = template_signal[abs(index)].real() - comjf* template_signal[abs(index)].imag();
+			else
+				A[i * template_signal.size() + j] = template_signal[abs(index)];
 		}
 	}
 	vector<double> S; S.resize(win_size);
@@ -579,7 +583,7 @@ int Signals_Processing::pre_nonlinear_filtering(double f0, double sampling, doub
 	vec_to_2dvec(U, UU);
 	vec_to_2dvec(V, VV);
 	transpose_conj(UU);
-	transpose_conj(VV);
+	//transpose_conj(VV);
 	for (int i = 0; i < S.size(); i++) if (abs(S[i] > 0.001))S[i] = 1. / S[i];
 	SS.resize(win_size);
 	for (int i = 0; i < win_size; i++)

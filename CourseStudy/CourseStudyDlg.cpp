@@ -524,7 +524,7 @@ void CCourseStudyDlg::OnBnClickedButton3()
 	pi_on_edit = sp.Uncertainty_ipp_jtids(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
 	auto end = steady_clock::now();
 	auto elapsed = duration_cast<milliseconds>(end - start);
-	test_time_cr = elapsed.count();
+	test_time_cr = (double)elapsed.count()/1000.;
 	sp.vec_normalize(ResearchRrr);
 	ViewerDraw(ResearchRrr, ResearchRrr.size(), viewer3);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -539,10 +539,11 @@ void CCourseStudyDlg::OnBnClickedButton4()
 	updateSP();
 	int found_delay;
 	auto start = steady_clock::now();
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
 	pi_on_edit = sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
 	auto end = steady_clock::now();
 	auto elapsed = duration_cast<milliseconds>(end - start);
-	test_time_cr = elapsed.count();
+	test_time_cr = (double)elapsed.count() / 1000.;
 	sp.vec_normalize(ResearchRrr);
 	ViewerDraw(ResearchRrr, ResearchRrr.size(), viewer3);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -561,6 +562,7 @@ void CCourseStudyDlg::OnBnClickedButton5()
 	int try_size = 10;
 	for (int i = win_size_min; i < win_size_max; i+= win_size_step_r)
 	{
+		sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, i);
 		double pi = 0;
 		for (int j = 0; j < try_size; j++)
 		{

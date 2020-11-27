@@ -53,7 +53,7 @@ public:
 	BOOL Dopler_On;
 	BOOL scramble;
 	BOOL Signals_generator_type;
-	int test_time_cr;
+	double test_time_cr;
 	int _k;
 	double pi_on_edit;
 	/*Объект отрисовки*/
