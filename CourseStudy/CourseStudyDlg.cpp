@@ -593,7 +593,7 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 	int noize_size_min = -15;
 	int noize_size_max = -5;
 	int noize_size_step_r = 2;
-	int try_size = 5;
+	int try_size = 10;
 	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
 	for (int i = noize_size_min; i <= noize_size_max; i += noize_size_step_r)
 	{
@@ -619,7 +619,38 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 
 void CCourseStudyDlg::OnBnClickedButton7() //bits study
 {
-	// TODO: добавьте свой код обработчика уведомлений
+	UpdateData(TRUE);
+	updateSP();
+	OnBnClickedButton2();
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
+	vector<vector<double>> study; study.resize(2);
+	int bits_size_min = 20;
+	int bits_size_max = 130;
+	int bits_size_step_r = 20;
+	int try_size = 10;
+	int minOx, maxOx;
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
+	for (int i = bits_size_min; i <= bits_size_max; i += bits_size_step_r)
+	{
+		double pi1 = 0;
+		double pi2 = 0;
+		for (int j = 0; j < try_size; j++)
+		{
+			Signals_Gen(i*4, i, noize_lvl);
+			if (i == bits_size_min)minOx = ImSignal2.size();
+			else maxOx = ImSignal2.size();
+			int found_delay;
+			pi1 += sp.Uncertainty_ipp_jtids(i, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+		}
+		pi1 /= try_size;
+		pi2 /= try_size;
+		study[0].push_back(pi1);
+		study[1].push_back(pi2);
+	}
+	TrueViewerDraw(study, minOx, maxOx, viewer3, "bits_study.png", true);
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(0);
 }
 
 
