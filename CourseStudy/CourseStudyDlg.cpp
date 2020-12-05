@@ -33,7 +33,7 @@ CCourseStudyDlg::CCourseStudyDlg(CWnd* pParent /*=nullptr*/)
 	, test_time_cr(0)
 	, _k(32)
 	, pi_on_edit(0)
-	, win_size(10)
+	, win_size(70)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -71,6 +71,9 @@ BEGIN_MESSAGE_MAP(CCourseStudyDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CCourseStudyDlg::OnBnClickedButton4)
 	ON_BN_CLICKED(IDC_BUTTON2, &CCourseStudyDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON5, &CCourseStudyDlg::OnBnClickedButton5)
+	ON_BN_CLICKED(IDC_BUTTON6, &CCourseStudyDlg::OnBnClickedButton6)
+	ON_BN_CLICKED(IDC_BUTTON7, &CCourseStudyDlg::OnBnClickedButton7)
+	ON_BN_CLICKED(IDC_BUTTON8, &CCourseStudyDlg::OnBnClickedButton8)
 END_MESSAGE_MAP()
 
 
@@ -574,7 +577,65 @@ void CCourseStudyDlg::OnBnClickedButton5()
 		pi /= try_size;
 		study[0].push_back(pi);
 	}
-	TrueViewerDraw(study, win_size_min, win_size_max, viewer3, "study1.png", true);
+	TrueViewerDraw(study, win_size_min, win_size_max, viewer3, "win_size_study.png", true);
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(0);
+}
+
+
+void CCourseStudyDlg::OnBnClickedButton6() //snr study
+{
+	// TODO: добавьте свой код обработчика уведомлений
+}
+
+
+void CCourseStudyDlg::OnBnClickedButton7() //bits study
+{
+	// TODO: добавьте свой код обработчика уведомлений
+}
+
+
+void CCourseStudyDlg::OnBnClickedButton8() //speed
+{
+	UpdateData(TRUE);
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
+	updateSP();
+
+	vector<vector<double>> study; study.resize(2);
+	int bits_size_min = 30;
+	int bits_size_max = 130;
+	int bits_size_step_r = 20;
+	int try_size = 1;
+	int minOx, maxOx;
+	for (int i = bits_size_min; i <= bits_size_max; i += bits_size_step_r)
+	{
+		sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
+		double time_1 = 0;
+		double time_2 = 0;
+		for (int j = 0; j < try_size; j++)
+		{
+			Signals_Gen(i*4, i, noize_lvl);
+			if (i == bits_size_min)minOx = ImSignal2.size();
+			else maxOx = ImSignal2.size();
+			int found_delay;
+			auto start1 = steady_clock::now();
+			pi_on_edit = sp.Uncertainty_ipp_jtids(i, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			auto end1 = steady_clock::now();
+			auto elapsed1 = duration_cast<milliseconds>(end1 - start1);
+			time_1 += (double)elapsed1.count() / 1000.;
+
+			auto start2 = steady_clock::now();
+			pi_on_edit = sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			auto end2 = steady_clock::now();
+			auto elapsed2 = duration_cast<milliseconds>(end2 - start2);
+			time_2 += (double)elapsed2.count() / 1000.;
+		}
+		time_1 /= try_size;
+		time_2 /= try_size;
+		study[0].push_back(time_1);
+		study[1].push_back(time_2);
+	}
+	TrueViewerDraw(study, minOx, maxOx, viewer3, "speed_study.png", true);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 	UpdateData(0);
 }
