@@ -211,6 +211,36 @@ return peak_intensity
 * Pisarenko harmonic decomposition
 * 
 */
-	int phd_filtering(signal_buf& signal, int win_size);
+	template <typename T>
+	void phd_filtering(T& signal, int win_size)
+	{
+		const int base_size = 3;
+		T freq_func; freq_func.resize(signal.size() - win_size);
+		for (int k = 0; k < freq_func.size(); k++) {
+			vector<double> S; S.resize(base_size, 0.);
+			vector<complex<double>> A; A.resize(pow(base_size, 2), 0.);
+			vector<complex<double>> U; U.resize(pow(base_size, 2), 0.);
+			vector<complex<double>> V; V.resize(pow(base_size, 2), 0.);
+			vector < complex<double>> akf; akf.resize(base_size, 0.);
+			for (int i = 0; i < base_size; i++)
+			{
+				for (int j = 0; j < win_size; j++)
+				{
+					akf[i] += signal[k + j] * conj(signal[k + (j + i) % win_size]);
+				}
+			}
+			for (int i = 0; i < base_size; i++) {
+				for (int j = 0; j < base_size; j++) {
+					A[i * base_size + j] = akf[abs(i - j)];
+				}
+			}
+			int error = CSVD(A, base_size, base_size, base_size, base_size, S, U, V);
+			complex <double> a0 = U[base_size - 1];
+			complex <double> a1 = U[2 * base_size - 1];
+			complex <double> a2 = U[3 * base_size - 1];
+			complex <double> result = sqrt(pow(a1, 2) - complex<double>(4, 0) * a0 * a2) / (complex<double>(2, 0) * a0);
+			freq_func[k] = atan(result);
+		}
+		signal = freq_func;
+	}
 };
-

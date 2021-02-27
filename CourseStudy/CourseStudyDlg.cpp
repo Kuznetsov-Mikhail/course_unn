@@ -75,6 +75,7 @@ BEGIN_MESSAGE_MAP(CCourseStudyDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON7, &CCourseStudyDlg::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON8, &CCourseStudyDlg::OnBnClickedButton8)
 	ON_BN_CLICKED(IDC_BUTTON9, &CCourseStudyDlg::OnBnClickedButton9)
+	ON_BN_CLICKED(IDC_BUTTON10, &CCourseStudyDlg::OnBnClickedButton10)
 END_MESSAGE_MAP()
 
 
@@ -569,6 +570,15 @@ void CCourseStudyDlg::OnBnClickedButton9() //Pisarenko harmonic decomposition
 	sp.vec_normalize(ResearchRrr);
 	ViewerDraw(ResearchRrr, ResearchRrr.size(), viewer3);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(FALSE);
+}
+
+void CCourseStudyDlg::OnBnClickedButton10()
+{
+	UpdateData(TRUE);
+	sp.phd_filtering(ImSignal1, win_size);
+	sp.phd_filtering(ImSignal2, win_size);
+	OnBnClickedCheck4();
 	UpdateData(FALSE);
 }
 void CCourseStudyDlg::OnBnClickedButton5()
