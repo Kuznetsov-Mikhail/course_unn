@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CCourseStudyDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON6, &CCourseStudyDlg::OnBnClickedButton6)
 	ON_BN_CLICKED(IDC_BUTTON7, &CCourseStudyDlg::OnBnClickedButton7)
 	ON_BN_CLICKED(IDC_BUTTON8, &CCourseStudyDlg::OnBnClickedButton8)
+	ON_BN_CLICKED(IDC_BUTTON9, &CCourseStudyDlg::OnBnClickedButton9)
 END_MESSAGE_MAP()
 
 
@@ -544,6 +545,24 @@ void CCourseStudyDlg::OnBnClickedButton4()
 	auto start = steady_clock::now();
 	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
 	pi_on_edit = sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+	auto end = steady_clock::now();
+	auto elapsed = duration_cast<milliseconds>(end - start);
+	test_time_cr = (double)elapsed.count() / 1000.;
+	sp.vec_normalize(ResearchRrr);
+	ViewerDraw(ResearchRrr, ResearchRrr.size(), viewer3);
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(FALSE);
+}
+
+void CCourseStudyDlg::OnBnClickedButton9() //Pisarenko harmonic decomposition
+{
+	UpdateData(TRUE);
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
+	updateSP();
+	int found_delay;
+	auto start = steady_clock::now();
+	//sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
+	pi_on_edit = sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
 	auto end = steady_clock::now();
 	auto elapsed = duration_cast<milliseconds>(end - start);
 	test_time_cr = (double)elapsed.count() / 1000.;

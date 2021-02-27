@@ -196,5 +196,21 @@ public:
 #pragma omp parallel for
 		for (int i = 0; i < v.size();i++) v[i] /= maxElement;
 	}
+/*Функция неопределённости для JTIDS сигналов
+с применением нелинейной фильтрации ГРП для канальных сигналов
+delay_size - заданная задержка сигналов в битах
+ImSignal1 - опорный сигнал
+ImSignal2 - исследуемый сигнал
+delay_lama - задержка
+return peak_intensity
+*/
+	double Correlation_omp_jtids_with_phd_filtering(int delay_size, const vector<complex<double>>& ImSignal1, \
+		const  vector<complex<double>>& ImSignal2, \
+		vector <double>& ResearchRrr, int& found_delay, int& delay_lama, int win_size);
+/**
+* Pisarenko harmonic decomposition
+* 
+*/
+	int phd_filtering(signal_buf& signal, int win_size);
 };
 
