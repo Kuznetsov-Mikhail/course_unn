@@ -588,9 +588,9 @@ void CCourseStudyDlg::OnBnClickedButton5()
 	updateSP();
 
 	vector<vector<double>> study; study.resize(1/*3*/);
-	int win_size_min = 10;
-	int win_size_max = 100;
-	int win_size_step_r = 10;
+	int win_size_min = 3;
+	int win_size_max = 15;
+	int win_size_step_r = 1;
 	int try_size = 10;
 	for (int i = win_size_min; i < win_size_max; i+= win_size_step_r)
 	{
@@ -600,8 +600,8 @@ void CCourseStudyDlg::OnBnClickedButton5()
 		{
 			Signals_Gen(bits_size, delay_size, noize_lvl);
 			int found_delay;
-			pi += sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, i);
-
+			//pi += sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, i);
+			pi += sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, i);
 		}
 		pi /= try_size;
 		study[0].push_back(pi);
@@ -618,7 +618,7 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 	updateSP();
 	OnBnClickedButton2();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
-	vector<vector<double>> study; study.resize(2);
+	vector<vector<double>> study; study.resize(3);
 	int noize_size_min = -15;
 	int noize_size_max = -5;
 	int noize_size_step_r = 2;
@@ -628,17 +628,21 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 	{
 		double pi1 = 0;
 		double pi2 = 0;
+		double pi3 = 0;
 		for (int j = 0; j < try_size; j++)
 		{
 			Signals_Gen(bits_size, delay_size, i);
 			int found_delay;
-			pi1 += sp.Uncertainty_ipp_jtids(i, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
-			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			pi1 += sp.Uncertainty_ipp_jtids(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			pi3 += sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
 		}
 		pi1 /= try_size;
 		pi2 /= try_size;
+		pi3 /= try_size;
 		study[0].push_back(pi1);
 		study[1].push_back(pi2);
+		study[2].push_back(pi2);
 	}
 	TrueViewerDraw(study, noize_size_min, noize_size_max, viewer3, "snr_study.png", true);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -663,6 +667,7 @@ void CCourseStudyDlg::OnBnClickedButton7() //bits study
 	{
 		double pi1 = 0;
 		double pi2 = 0;
+		double pi3 = 0;
 		for (int j = 0; j < try_size; j++)
 		{
 			Signals_Gen(i*4, i, noize_lvl);
@@ -671,11 +676,14 @@ void CCourseStudyDlg::OnBnClickedButton7() //bits study
 			int found_delay;
 			pi1 += sp.Uncertainty_ipp_jtids(i, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
 			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			pi3 += sp.Correlation_omp_jtids_with_phd_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
 		}
 		pi1 /= try_size;
 		pi2 /= try_size;
+		pi3 /= try_size;
 		study[0].push_back(pi1);
 		study[1].push_back(pi2);
+		study[2].push_back(pi3);
 	}
 	TrueViewerDraw(study, minOx, maxOx, viewer3, "bits_study.png", true);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -700,6 +708,7 @@ void CCourseStudyDlg::OnBnClickedButton8() //speed
 	{
 		double time_1 = 0;
 		double time_2 = 0;
+		double time_3 = 0;
 		for (int j = 0; j < try_size; j++)
 		{
 			Signals_Gen(i*4, i, noize_lvl);
@@ -717,11 +726,19 @@ void CCourseStudyDlg::OnBnClickedButton8() //speed
 			auto end2 = steady_clock::now();
 			auto elapsed2 = duration_cast<milliseconds>(end2 - start2);
 			time_2 += (double)elapsed2.count() / 1000.;
+
+			auto start3 = steady_clock::now();
+			pi_on_edit = sp.Correlation_omp_jtids_with_phd_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			auto end3 = steady_clock::now();
+			auto elapsed3 = duration_cast<milliseconds>(end3 - start3);
+			time_3 += (double)elapsed3.count() / 1000.;
 		}
 		time_1 /= try_size;
 		time_2 /= try_size;
+		time_3 /= try_size;
 		study[0].push_back(time_1);
 		study[1].push_back(time_2);
+		study[2].push_back(time_3);
 	}
 	TrueViewerDraw(study, minOx, maxOx, viewer3, "speed_study.png", true);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
