@@ -14,6 +14,8 @@
 #include <cstring>
 using namespace std;
 #define LOGS_PATH "Logs/"
+#define NL_WIN_SIZE 70
+#define PHD_WIN_SIZE 10
 
 // Диалоговое окно CCourseStudyDlg
 class CCourseStudyDlg : public CDialogEx
@@ -163,4 +165,8 @@ public:
 	afx_msg void OnBnClickedButton8();
 	afx_msg void OnBnClickedButton9();
 	afx_msg void OnBnClickedButton10();
+	void message_done()
+	{
+		MessageBox(L"Done", L"", MB_OK | MB_ICONINFORMATION);
+	}
 };

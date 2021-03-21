@@ -91,6 +91,7 @@ BOOL CCourseStudyDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Мелкий значок
 
 	// TODO: добавьте дополнительную инициализацию
+	OnBnClickedButton2();
 
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
@@ -455,6 +456,7 @@ void CCourseStudyDlg::TrueViewerDraw(vector<vector<double>>& data, double Xmin, 
 	const char* chPathPic = PathPic.c_str();
 	c->makeChart(chPathPic);
 	delete c;
+	this->message_done();
 }
 //Обновление переменных класса sp - класса обработки генерируемых сигналов
 void CCourseStudyDlg::updateSP() //Обновление переменных класса sp - класса обработки генерируемых сигналов
@@ -588,11 +590,11 @@ void CCourseStudyDlg::OnBnClickedButton5()
 	updateSP();
 
 	vector<vector<double>> study; study.resize(1/*3*/);
-	int win_size_min = 3;
-	int win_size_max = 15;
+	int win_size_min = 8;
+	int win_size_max = 13;
 	int win_size_step_r = 1;
-	int try_size = 10;
-	for (int i = win_size_min; i < win_size_max; i+= win_size_step_r)
+	int try_size = 1;
+	for (int i = win_size_min; i <= win_size_max; i+= win_size_step_r)
 	{
 		sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, i);
 		double pi = 0;
@@ -623,7 +625,7 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 	int noize_size_max = -5;
 	int noize_size_step_r = 2;
 	int try_size = 10;
-	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
 	for (int i = noize_size_min; i <= noize_size_max; i += noize_size_step_r)
 	{
 		double pi1 = 0;
@@ -634,8 +636,8 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 			Signals_Gen(bits_size, delay_size, i);
 			int found_delay;
 			pi1 += sp.Uncertainty_ipp_jtids(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
-			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
-			pi3 += sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, NL_WIN_SIZE);
+			pi3 += sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, PHD_WIN_SIZE);
 		}
 		pi1 /= try_size;
 		pi2 /= try_size;
@@ -662,7 +664,7 @@ void CCourseStudyDlg::OnBnClickedButton7() //bits study
 	int bits_size_step_r = 20;
 	int try_size = 10;
 	int minOx, maxOx;
-	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
 	for (int i = bits_size_min; i <= bits_size_max; i += bits_size_step_r)
 	{
 		double pi1 = 0;
@@ -675,8 +677,8 @@ void CCourseStudyDlg::OnBnClickedButton7() //bits study
 			else maxOx = ImSignal2.size();
 			int found_delay;
 			pi1 += sp.Uncertainty_ipp_jtids(i, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
-			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
-			pi3 += sp.Correlation_omp_jtids_with_phd_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, NL_WIN_SIZE);
+			pi3 += sp.Correlation_omp_jtids_with_phd_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, PHD_WIN_SIZE);
 		}
 		pi1 /= try_size;
 		pi2 /= try_size;
@@ -703,7 +705,7 @@ void CCourseStudyDlg::OnBnClickedButton8() //speed
 	int bits_size_step_r = 20;
 	int try_size = 1;
 	int minOx, maxOx;
-	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, win_size);
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
 	for (int i = bits_size_min; i <= bits_size_max; i += bits_size_step_r)
 	{
 		double time_1 = 0;
@@ -722,13 +724,13 @@ void CCourseStudyDlg::OnBnClickedButton8() //speed
 			time_1 += (double)elapsed1.count() / 1000.;
 
 			auto start2 = steady_clock::now();
-			pi_on_edit = sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			pi_on_edit = sp.Correlation_omp_jtids_with_nl_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, NL_WIN_SIZE);
 			auto end2 = steady_clock::now();
 			auto elapsed2 = duration_cast<milliseconds>(end2 - start2);
 			time_2 += (double)elapsed2.count() / 1000.;
 
 			auto start3 = steady_clock::now();
-			pi_on_edit = sp.Correlation_omp_jtids_with_phd_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, win_size);
+			pi_on_edit = sp.Correlation_omp_jtids_with_phd_filtering(i, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, PHD_WIN_SIZE);
 			auto end3 = steady_clock::now();
 			auto elapsed3 = duration_cast<milliseconds>(end3 - start3);
 			time_3 += (double)elapsed3.count() / 1000.;
