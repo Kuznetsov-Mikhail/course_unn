@@ -621,8 +621,8 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 	OnBnClickedButton2();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 	vector<vector<double>> study; study.resize(3);
-	int noize_size_min = -15;
-	int noize_size_max = -5;
+	int noize_size_min = -10;
+	int noize_size_max = 6;
 	int noize_size_step_r = 2;
 	int try_size = 10;
 	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
@@ -644,7 +644,7 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 		pi3 /= try_size;
 		study[0].push_back(pi1);
 		study[1].push_back(pi2);
-		study[2].push_back(pi2);
+		study[2].push_back(pi3);
 	}
 	TrueViewerDraw(study, noize_size_min, noize_size_max, viewer3, "snr_study.png", true);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
@@ -658,9 +658,9 @@ void CCourseStudyDlg::OnBnClickedButton7() //bits study
 	updateSP();
 	OnBnClickedButton2();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
-	vector<vector<double>> study; study.resize(2);
+	vector<vector<double>> study; study.resize(3);
 	int bits_size_min = 20;
-	int bits_size_max = 130;
+	int bits_size_max = 140;
 	int bits_size_step_r = 20;
 	int try_size = 10;
 	int minOx, maxOx;
@@ -699,7 +699,7 @@ void CCourseStudyDlg::OnBnClickedButton8() //speed
 	updateSP();
 	OnBnClickedButton2();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
-	vector<vector<double>> study; study.resize(2);
+	vector<vector<double>> study; study.resize(3);
 	int bits_size_min = 30;
 	int bits_size_max = 130;
 	int bits_size_step_r = 20;
