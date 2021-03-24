@@ -169,4 +169,5 @@ public:
 	{
 		MessageBox(L"Done", L"", MB_OK | MB_ICONINFORMATION);
 	}
+	afx_msg void OnBnClickedButton11();
 };

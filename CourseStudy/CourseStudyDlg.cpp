@@ -76,6 +76,7 @@ BEGIN_MESSAGE_MAP(CCourseStudyDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON8, &CCourseStudyDlg::OnBnClickedButton8)
 	ON_BN_CLICKED(IDC_BUTTON9, &CCourseStudyDlg::OnBnClickedButton9)
 	ON_BN_CLICKED(IDC_BUTTON10, &CCourseStudyDlg::OnBnClickedButton10)
+	ON_BN_CLICKED(IDC_BUTTON11, &CCourseStudyDlg::OnBnClickedButton11)
 END_MESSAGE_MAP()
 
 
@@ -618,11 +619,10 @@ void CCourseStudyDlg::OnBnClickedButton6() //snr study
 {
 	UpdateData(TRUE);
 	updateSP();
-	OnBnClickedButton2();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 	vector<vector<double>> study; study.resize(3);
 	int noize_size_min = -10;
-	int noize_size_max = 6;
+	int noize_size_max = 10;
 	int noize_size_step_r = 2;
 	int try_size = 10;
 	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
@@ -656,7 +656,6 @@ void CCourseStudyDlg::OnBnClickedButton7() //bits study
 {
 	UpdateData(TRUE);
 	updateSP();
-	OnBnClickedButton2();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 	vector<vector<double>> study; study.resize(3);
 	int bits_size_min = 20;
@@ -697,7 +696,6 @@ void CCourseStudyDlg::OnBnClickedButton8() //speed
 {
 	UpdateData(TRUE);
 	updateSP();
-	OnBnClickedButton2();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 	vector<vector<double>> study; study.resize(3);
 	int bits_size_min = 30;
@@ -743,6 +741,44 @@ void CCourseStudyDlg::OnBnClickedButton8() //speed
 		study[2].push_back(time_3);
 	}
 	TrueViewerDraw(study, minOx, maxOx, viewer3, "speed_study.png", true);
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(0);
+}
+
+
+void CCourseStudyDlg::OnBnClickedButton11()
+{
+	UpdateData(TRUE);
+	updateSP();
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
+	vector<vector<double>> study; study.resize(3);
+	int f_dopler_min = 0;
+	int f_dopler_max = 1e6;
+	int f_dopler_step_r = 1e5;
+	int try_size = 10;
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
+	for (int i = f_dopler_min; i <= f_dopler_max; i += f_dopler_step_r)
+	{
+		double pi1 = 0;
+		double pi2 = 0;
+		double pi3 = 0;
+		for (int j = 0; j < try_size; j++)
+		{
+			f_dop = i;
+			Signals_Gen(bits_size, delay_size, noize_lvl);
+			int found_delay;
+			pi1 += sp.Uncertainty_ipp_jtids(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			pi2 += sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, NL_WIN_SIZE);
+			pi3 += sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, PHD_WIN_SIZE);
+		}
+		pi1 /= try_size;
+		pi2 /= try_size;
+		pi3 /= try_size;
+		study[0].push_back(pi1);
+		study[1].push_back(pi2);
+		study[2].push_back(pi3);
+	}
+	TrueViewerDraw(study, f_dopler_min, f_dopler_max, viewer3, "f_dop_study.png", true);
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 	UpdateData(0);
 }
