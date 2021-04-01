@@ -144,11 +144,7 @@ public:
 		sp.spVertex(ImSpectr1);
 		sp.spVertex(ImSpectr2);
 	}
-	/*Объект класса File_helper*/
 	File_helper fh;
-	/// <summary>
-	/// VI COURSE
-	/// </summary>
 	Signals_helper MySignals;
 	void TrueViewerDraw(vector<vector<double>>& data, double Xmin, double Xmax, CChartViewer& viewer_num, string PathPic, bool podpisi);
 	vector<vector<double>> TVD_vec;
@@ -170,4 +166,7 @@ public:
 		MessageBox(L"Done", L"", MB_OK | MB_ICONINFORMATION);
 	}
 	afx_msg void OnBnClickedButton11();
+	afx_msg void OnBnClickedButton12();
+	afx_msg void OnBnClickedButton13();
+	afx_msg void OnBnClickedButton14();
 };

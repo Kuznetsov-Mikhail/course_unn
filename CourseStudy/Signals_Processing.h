@@ -117,6 +117,9 @@ public:
 	double Uncertainty_ipp_jtids(int delay_size, const vector<complex<double>>& ImSignal1, \
 		const  vector<complex<double>>& ImSignal2, \
 		int ksum, vector <double>& ResearchRrr, int& found_delay, int& delay_lama);
+	double Uncertainty_ipp_once(int delay_size, const vector<complex<double>>& ImSignal1, \
+		const  vector<complex<double>>& ImSignal2, \
+		int ksum, vector <double>& ResearchRrr, int& found_delay, int& delay_lama);
 	/*Функция неопределённости для JTIDS сигналов 
 	с применением нелинейной фильтрации для канальных сигналов
 	delay_size - заданная задержка сигналов в битах

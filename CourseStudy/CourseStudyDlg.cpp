@@ -77,6 +77,9 @@ BEGIN_MESSAGE_MAP(CCourseStudyDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON9, &CCourseStudyDlg::OnBnClickedButton9)
 	ON_BN_CLICKED(IDC_BUTTON10, &CCourseStudyDlg::OnBnClickedButton10)
 	ON_BN_CLICKED(IDC_BUTTON11, &CCourseStudyDlg::OnBnClickedButton11)
+	ON_BN_CLICKED(IDC_BUTTON12, &CCourseStudyDlg::OnBnClickedButton12)
+	ON_BN_CLICKED(IDC_BUTTON13, &CCourseStudyDlg::OnBnClickedButton13)
+	ON_BN_CLICKED(IDC_BUTTON14, &CCourseStudyDlg::OnBnClickedButton14)
 END_MESSAGE_MAP()
 
 
@@ -752,9 +755,9 @@ void CCourseStudyDlg::OnBnClickedButton11()
 	updateSP();
 	SetCursor(LoadCursor(nullptr, IDC_WAIT));
 	vector<vector<double>> study; study.resize(3);
-	int f_dopler_min = 0;
-	int f_dopler_max = 1e6;
-	int f_dopler_step_r = 1e5;
+	int f_dopler_min = -1e5;
+	int f_dopler_max = 1e5;
+	int f_dopler_step_r = 5e4;
 	int try_size = 10;
 	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
 	for (int i = f_dopler_min; i <= f_dopler_max; i += f_dopler_step_r)
@@ -779,6 +782,137 @@ void CCourseStudyDlg::OnBnClickedButton11()
 		study[2].push_back(pi3);
 	}
 	TrueViewerDraw(study, f_dopler_min, f_dopler_max, viewer3, "f_dop_study.png", true);
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(0);
+}
+
+
+void CCourseStudyDlg::OnBnClickedButton12()
+{
+	UpdateData(TRUE);
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
+	updateSP();
+	int found_delay;
+	auto start = steady_clock::now();
+	pi_on_edit = sp.Uncertainty_ipp_once(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+	auto end = steady_clock::now();
+	auto elapsed = duration_cast<milliseconds>(end - start);
+	test_time_cr = (double)elapsed.count() / 1000.;
+	sp.vec_normalize(ResearchRrr);
+	ViewerDraw(ResearchRrr, ResearchRrr.size(), viewer3);
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(FALSE);
+}
+
+
+void CCourseStudyDlg::OnBnClickedButton13()
+{
+	UpdateData(TRUE);
+	updateSP();
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
+	auto start = steady_clock::now();
+	vector<vector<double>> study; study.resize(4);
+	int f_dopler_min = 0;
+	int f_dopler_max = 1e7;
+	int f_dopler_step_r = 1e6;
+	int try_size = 10;
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
+	for (int i = f_dopler_min; i <= f_dopler_max; i += f_dopler_step_r)
+	{
+		double pi1 = 0;
+		double pi2 = 0;
+		double pi3 = 0;
+		double pi4 = 0;
+		for (int j = 0; j < try_size; j++)
+		{
+			f_dop = i;
+			Signals_Gen(bits_size, delay_size, noize_lvl);
+			int found_delay;
+			int expected_delay = delay_size * sp.bit_time;
+			int delta_error;
+			sp.Uncertainty_ipp_jtids(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi1 += 1;
+			sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, NL_WIN_SIZE);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi2 += 1;
+			sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, PHD_WIN_SIZE);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi3 += 1;
+			sp.Uncertainty_ipp_once(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi4 += 1;
+		}
+		pi1 /= try_size;
+		pi2 /= try_size;
+		pi3 /= try_size;
+		pi4 /= try_size;
+		study[0].push_back(pi1);
+		study[1].push_back(pi2);
+		study[2].push_back(pi3);
+		study[3].push_back(pi4);
+	}
+	TrueViewerDraw(study, f_dopler_min, f_dopler_max, viewer3, "f_dop_study.png", true);
+	auto end = steady_clock::now();
+	auto elapsed = duration_cast<milliseconds>(end - start);
+	test_time_cr = (double)elapsed.count() / 1000.;
+	SetCursor(LoadCursor(nullptr, IDC_ARROW));
+	UpdateData(0);
+}
+
+
+void CCourseStudyDlg::OnBnClickedButton14()
+{
+	UpdateData(TRUE);
+	updateSP();
+	SetCursor(LoadCursor(nullptr, IDC_WAIT));
+	auto start = steady_clock::now();
+
+	vector<vector<double>> study; study.resize(4);
+	int noize_size_min = -10;
+	int noize_size_max = 10;
+	int noize_size_step_r = 2;
+	int try_size = 10;
+	sp.pre_nonlinear_filtering(sp.sampling / 4, sp.sampling, sp.BrV, sp.AA_matr, NL_WIN_SIZE);
+	for (int i = noize_size_min; i <= noize_size_max; i += noize_size_step_r)
+	{
+		double pi1 = 0;
+		double pi2 = 0;
+		double pi3 = 0;
+		double pi4 = 0;
+		for (int j = 0; j < try_size; j++)
+		{
+			Signals_Gen(bits_size, delay_size, i);
+			int found_delay;
+			int expected_delay = delay_size * sp.bit_time;
+			int delta_error;
+			sp.Uncertainty_ipp_jtids(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi1 += 1;
+			sp.Correlation_omp_jtids_with_nl_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, NL_WIN_SIZE);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi2 += 1;
+			sp.Correlation_omp_jtids_with_phd_filtering(delay_size, ImSignal1, ImSignal2, ResearchRrr, found_delay, delay_lama, PHD_WIN_SIZE);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi3 += 1;
+			sp.Uncertainty_ipp_once(delay_size, ImSignal1, ImSignal2, _k, ResearchRrr, found_delay, delay_lama);
+			delta_error = abs(expected_delay - found_delay);
+			if (delta_error < 2 * sp.bit_time) pi4 += 1;
+		}
+		pi1 /= try_size;
+		pi2 /= try_size;
+		pi3 /= try_size;
+		pi4 /= try_size;
+		study[0].push_back(pi1);
+		study[1].push_back(pi2);
+		study[2].push_back(pi3);
+		study[3].push_back(pi3);
+	}
+	TrueViewerDraw(study, noize_size_min, noize_size_max, viewer3, "snr_study.png", true);
+
+	auto end = steady_clock::now();
+	auto elapsed = duration_cast<milliseconds>(end - start);
+	test_time_cr = (double)elapsed.count() / 1000.;
 	SetCursor(LoadCursor(nullptr, IDC_ARROW));
 	UpdateData(0);
 }

@@ -555,6 +555,31 @@ double  Signals_Processing::Uncertainty_ipp_jtids(int delay_size, const vector<c
 	double pi = peak_intensity(ResearchRrr);
 	return pi;
 }
+double  Signals_Processing::Uncertainty_ipp_once(int delay_size, const vector<complex<double>>& ImSignal1, const vector<complex<double>>& ImSignal2, int ksum, vector <double>& ResearchRrr, int& found_delay, int& delay_lama)
+{
+	ResearchRrr.clear();
+	ResearchRrr.resize(ImSignal1.size());
+	Uncertainty_ipp(ResearchRrr, ImSignal1, ImSignal2, ksum);
+	if (ResearchRrr.size() != NULL)
+	{
+		double buff_ResearchRrr = 0;
+		for (int i = 0; i < ResearchRrr.size(); i++)
+		{
+			if (ResearchRrr[i] > buff_ResearchRrr)
+			{
+				buff_ResearchRrr = ResearchRrr[i]; delay_lama = i;
+			}
+		}
+	}
+	this->FHSS_Signals_initial_fl.clear();
+	this->FHSS_Signals_fl.clear();
+	found_delay = delay_lama; //in counts 
+	delay_lama = int((double)delay_lama / this->bit_time);// in bits
+	int expected_delay = delay_size * this->bit_time;
+	int delta_error = abs(expected_delay - found_delay);
+	double pi = peak_intensity(ResearchRrr);
+	return pi;
+}
 
 void Signals_Processing::Uncertainty_omp(vector<double>& mass, vector<complex<double>> Signal1, vector<complex<double>> Signal2, int ksum)
 {
@@ -842,9 +867,11 @@ int Signals_Processing::step2(int sizein)
 
 void Signals_Processing::Dopler(vector <complex<double>>& Signal, double shift, double center_frequency)
 {
+	int size = Signal.size();
 	double alfa = shift / center_frequency;
 	Dopler_shift(Signal, shift);
 	Dopler_scaling(Signal, alfa);
+	Signal.resize(size);
 }
 template<typename T>
 void Signals_Processing::Dopler_shift(vector<complex<T>>& mass, T PhiDopler)
@@ -1087,7 +1114,7 @@ void Signals_Processing::Simple_Signals_Generator(vector <complex<double>>& Sign
 	double delta4astota = bitrate / 4;
 	for (int i = 0; i < SignalsObraz.size(); i++)
 	{
-		double local_frequencies = ((double)operating_frequencies[SignalsObraz[i].W_number] - 1087.5) * 1000000;
+		double local_frequencies = ((double)operating_frequencies[SignalsObraz[i].W_number] - 1087.5) * 1e6;
 		if (SignalsObraz[i].b_bit)Buffaza += 2 * M_PI * (local_frequencies + delta4astota) / sampling;
 		else Buffaza += 2 * M_PI * (local_frequencies - delta4astota) / sampling;
 		NormalPhaza(Buffaza);
